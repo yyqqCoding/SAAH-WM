@@ -2,6 +2,6 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/module-1-doc/vq-vae-2-pytorch" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/baseline/SEAL" vcs="Git" />
   </component>
 </project>
