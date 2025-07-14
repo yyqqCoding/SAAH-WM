@@ -1,0 +1,57 @@
+# SAAH-WM Baseline 第二步训练系统依赖包
+
+# 深度学习框架
+torch>=1.12.0
+torchvision>=0.13.0
+torchaudio>=0.12.0
+
+# 扩散模型相关
+diffusers>=0.21.0
+transformers>=4.21.0
+accelerate>=0.20.0
+safetensors>=0.3.0
+
+# 图像处理
+opencv-python>=4.6.0
+Pillow>=9.0.0
+imageio>=2.19.0
+scikit-image>=0.19.0
+
+# 数据处理
+numpy>=1.21.0
+pandas>=1.4.0
+scipy>=1.8.0
+
+# 机器学习工具
+scikit-learn>=1.1.0
+matplotlib>=3.5.0
+seaborn>=0.11.0
+
+# 配置文件处理
+PyYAML>=6.0
+omegaconf>=2.2.0
+
+# 日志和监控
+tensorboard>=2.9.0
+wandb>=0.12.0
+tqdm>=4.64.0
+
+# BCH纠错码（从第一步继承）
+bchlib>=0.14.0
+
+# CLIP模型（从第一步继承）
+clip-by-openai>=1.0
+
+# 工具库
+einops>=0.4.0
+timm>=0.6.0
+lpips>=0.1.4
+
+# 开发工具
+pytest>=7.0.0
+black>=22.0.0
+flake8>=4.0.0
+
+# 系统工具
+psutil>=5.9.0
+GPUtil>=1.4.0

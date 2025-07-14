@@ -1,0 +1,146 @@
+# SAAH-WM Baseline 第二步 - 快速测试配置
+
+# 基本设置
+experiment_name: "saah_wm_quick_test"
+seed: 42
+device: "cuda"
+mixed_precision: false
+
+# 数据集配置（使用临时测试数据）
+dataset:
+  coco_path: "test_images"  # 将创建临时测试图像
+  image_size: 256
+  crop_size: 128
+  use_flip: false
+  use_rotation: false
+  use_color_jitter: false
+  batch_size: 2
+  num_workers: 0
+  pin_memory: false
+  train_split: 0.8
+  val_split: 0.2
+
+# 模型配置（简化版本）
+model:
+  latent_height: 16
+  latent_width: 16
+  latent_channels: 4
+  message_length: 32
+  watermark_strength: 0.1
+  
+  fragile_encoder:
+    in_channels: 8
+    out_channels: 4
+    hidden_dim: 32
+    num_layers: 2
+    
+  robust_encoder:
+    in_channels: 4
+    message_dim: 32
+    hidden_dim: 32
+    num_layers: 2
+    
+  robust_decoder:
+    in_channels: 4
+    message_dim: 32
+    hidden_dim: 32
+    num_layers: 2
+    
+  fragile_decoder:
+    in_channels: 4
+    out_channels: 8
+    hidden_dim: 32
+    num_layers: 2
+
+# 训练配置（快速训练）
+training:
+  num_epochs: 3
+  learning_rate: 0.001
+  weight_decay: 0.000001
+  optimizer: "adamw"
+  beta1: 0.9
+  beta2: 0.999
+  eps: 0.00000001
+  lr_scheduler: "cosine"
+  warmup_epochs: 1
+  min_lr: 0.000001
+  
+  loss_weights:
+    image_loss: 1.0
+    robust_loss: 10.0
+    fragile_loss: 5.0
+  
+  gradient_clip_norm: 1.0
+  val_frequency: 1
+  save_frequency: 2
+
+# 攻击模拟配置（简化）
+attacks:
+  jpeg_compression:
+    enabled: true
+    quality_range: [70, 90]
+    probability: 0.5
+  
+  gaussian_noise:
+    enabled: true
+    sigma_range: [0.01, 0.05]
+    probability: 0.5
+  
+  resize_attack:
+    enabled: false
+
+# 第一步模块集成配置
+step1_integration:
+  semantic_hash:
+    hash_length: 128
+    clip_model: "openai/clip-vit-base-patch32"
+  
+  base_watermark:
+    strength: 1.0
+    frequency_domain: false
+  
+  message_packet:
+    bch_polynomial: 285
+    bch_bits: 4
+    copyright_length: 16
+
+# 日志配置
+logging:
+  level: "INFO"
+  log_dir: "logs"
+  log_file: "quick_test_{timestamp}.log"
+  console_output: true
+  tensorboard_dir: "logs/tensorboard"
+  progress_bar: true
+
+# 模型保存配置
+checkpoints:
+  save_dir: "checkpoints"
+  save_best: true
+  save_last: true
+  save_interval: 2
+  
+  performance_thresholds:
+    min_psnr: -15.0
+    min_ssim: 0.0
+    min_bit_accuracy: 0.4
+
+# 验证配置
+validation:
+  val_samples: 10
+  metrics:
+    - "psnr"
+    - "ssim"
+    - "bit_accuracy"
+    - "message_recovery"
+  save_samples: true
+  num_visual_samples: 2
+
+# 调试配置
+debug:
+  enabled: true
+  fast_run: true
+  fast_run_samples: 10
+  memory_monitoring: false
+  check_gradients: false
+  check_weights: false

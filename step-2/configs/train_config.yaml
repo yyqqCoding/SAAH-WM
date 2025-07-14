@@ -1,0 +1,202 @@
+# SAAH-WM Baseline 第二步训练配置文件
+
+# 基本设置
+experiment_name: "saah_wm_baseline_step2"
+seed: 42
+device: "cuda"  # cuda 或 cpu
+mixed_precision: true  # 混合精度训练
+
+# 数据集配置
+dataset:
+  # COCO2017数据集路径
+  coco_path: "D:/CodePaper/EditGuard/train2017/train2017"
+  
+  # 图像处理参数
+  image_size: 512  # 输入图像尺寸
+  crop_size: 400   # 随机裁剪尺寸
+  
+  # 数据增强
+  use_flip: true
+  use_rotation: true
+  use_color_jitter: true
+  
+  # 数据加载
+  batch_size: 4
+  num_workers: 8
+  pin_memory: true
+  
+  # 训练/验证分割
+  train_split: 0.9
+  val_split: 0.1
+
+# 模型配置
+model:
+  # 潜在空间尺寸（Stable Diffusion 2.1）
+  latent_height: 64
+  latent_width: 64
+  latent_channels: 4
+  
+  # 水印参数
+  message_length: 64    # 信息包长度（位）
+  watermark_strength: 0.1  # 水印强度
+  
+  # 网络结构参数
+  fragile_encoder:
+    in_channels: 8      # 4(图像) + 4(基准水印)
+    out_channels: 4     # 潜在空间通道数
+    hidden_dim: 256
+    num_layers: 6
+    
+  robust_encoder:
+    in_channels: 4      # 潜在空间通道数
+    message_dim: 64     # 信息包维度
+    hidden_dim: 512
+    num_layers: 8
+    
+  robust_decoder:
+    in_channels: 4      # 潜在空间通道数
+    message_dim: 64     # 输出信息包维度
+    hidden_dim: 512
+    num_layers: 6
+    
+  fragile_decoder:
+    in_channels: 4      # 潜在空间通道数
+    out_channels: 8     # 4(原图) + 4(基准水印)
+    hidden_dim: 256
+    num_layers: 6
+
+# 训练配置
+training:
+  # 基本参数
+  num_epochs: 100
+  learning_rate: 1e-4
+  weight_decay: 1e-6
+  
+  # 优化器设置
+  optimizer: "adamw"
+  beta1: 0.9
+  beta2: 0.999
+  eps: 1e-8
+  
+  # 学习率调度
+  lr_scheduler: "cosine"
+  warmup_epochs: 5
+  min_lr: 1e-6
+  
+  # 损失函数权重
+  loss_weights:
+    image_loss: 1.0      # 图像保真度损失权重
+    robust_loss: 100.0   # 鲁棒信息解码损失权重
+    fragile_loss: 10.0   # 脆弱水印恢复损失权重
+  
+  # 梯度裁剪
+  gradient_clip_norm: 1.0
+  
+  # 验证频率
+  val_frequency: 500    # 每500步验证一次
+  save_frequency: 1000  # 每1000步保存一次
+
+# 攻击模拟配置
+attacks:
+  # JPEG压缩
+  jpeg_compression:
+    enabled: true
+    quality_range: [50, 95]  # 质量因子范围
+    probability: 0.7         # 应用概率
+  
+  # 高斯噪声
+  gaussian_noise:
+    enabled: true
+    sigma_range: [0.0, 0.1]  # 标准差范围
+    probability: 0.5         # 应用概率
+  
+  # 其他攻击（可扩展）
+  resize_attack:
+    enabled: false
+    scale_range: [0.8, 1.2]
+    probability: 0.3
+
+# 第一步模块集成配置
+step1_integration:
+  # 语义哈希配置
+  semantic_hash:
+    hash_length: 256     # 哈希长度（位）
+    clip_model: "openai/clip-vit-large-patch14"
+  
+  # 基准水印配置
+  base_watermark:
+    strength: 1.0        # 水印强度
+    frequency_domain: true  # 是否在频域生成
+  
+  # 信息包配置
+  message_packet:
+    bch_polynomial: 285  # BCH多项式
+    bch_bits: 8         # BCH纠错位数
+    copyright_length: 32 # 版权信息长度（字符）
+
+# 日志配置
+logging:
+  # 日志级别
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  
+  # 日志文件
+  log_dir: "logs"
+  log_file: "training_{timestamp}.log"
+  
+  # 控制台输出
+  console_output: true
+  
+  # TensorBoard
+  tensorboard_dir: "logs/tensorboard"
+  
+  # 进度条
+  progress_bar: true
+
+# 模型保存配置
+checkpoints:
+  # 保存目录
+  save_dir: "checkpoints"
+  
+  # 保存策略
+  save_best: true       # 保存最佳模型
+  save_last: true       # 保存最新模型
+  save_interval: 5      # 每5个epoch保存一次
+  
+  # 性能指标阈值
+  performance_thresholds:
+    min_psnr: 38.0      # 最小PSNR要求
+    min_ssim: 0.95      # 最小SSIM要求
+    min_bit_accuracy: 0.995  # 最小比特准确率要求
+
+# 验证配置
+validation:
+  # 验证集大小
+  val_samples: 1000
+  
+  # 评估指标
+  metrics:
+    - "psnr"           # 峰值信噪比
+    - "ssim"           # 结构相似性
+    - "lpips"          # 感知损失
+    - "bit_accuracy"   # 比特准确率
+    - "message_recovery"  # 信息恢复率
+  
+  # 可视化
+  save_samples: true
+  num_visual_samples: 10
+
+# 调试配置
+debug:
+  # 调试模式
+  enabled: false
+  
+  # 快速运行（小数据集）
+  fast_run: false
+  fast_run_samples: 100
+  
+  # 内存监控
+  memory_monitoring: true
+  
+  # 模型检查
+  check_gradients: false
+  check_weights: false
